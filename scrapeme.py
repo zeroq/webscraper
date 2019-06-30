@@ -7,9 +7,16 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
+import argparse
+
 
 if __name__ == '__main__':
-    url = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--url', required=True, help='URL to scrape')
+    parser.add_argument('--shot', action='store_true', help='take and store screenshot')
+    parser.add_argument('--source', action='store_true', help='store source code')
+    args = parser.parse_args()
+    url = args.url
     if not url.startswith('http'):
         url = 'http://'+url
     chrome_options = Options()
@@ -30,9 +37,11 @@ if __name__ == '__main__':
     driver.get(url)
     url_hash = hashlib.md5(url.encode('utf8')).hexdigest()
     content = driver.page_source
-    driver.save_screenshot('%s/screenshot-%s.png' % (storage, url_hash))
-    with open('%s/source-%s.bin' % (storage, url_hash), 'w') as fp:
-        fp.write(content)
+    if args.shot:
+        driver.save_screenshot('%s/screenshot-%s.png' % (storage, url_hash))
+    if args.source:
+        with open('%s/source-%s.bin' % (storage, url_hash), 'w') as fp:
+            fp.write(content)
 
     driver.close()
     driver.quit()
