@@ -9,6 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
 import argparse
+import re
 
 
 if __name__ == '__main__':
@@ -17,6 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--shot', action='store_true', help='take and store screenshot')
     parser.add_argument('--source', action='store_true', help='store source code')
     parser.add_argument('--tor', action='store_true', help='use local tor proxy for connection')
+    parser.add_argument('--links', action='store_true', help='extract all links')
     args = parser.parse_args()
     url = args.url
     if not url.startswith('http'):
@@ -39,7 +41,7 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(executable_path='./chromedriver', chrome_options=chrome_options)
     driver.set_window_size(width, height)
     driver.implicitly_wait(10)
-    driver.set_page_load_timeout(15.0)
+    driver.set_page_load_timeout(60.0)
     try:
         driver.get(url)
     except TimeoutException as e:
@@ -54,6 +56,13 @@ if __name__ == '__main__':
     if args.source:
         with open('%s/source-%s.bin' % (storage, url_hash), 'w') as fp:
             fp.write(content)
+    if args.links:
+        re_links = re.compile('href=\"(https{0,1}://(.+?\..+?)/{0,1}.*?)\"')
+        ll = re_links.findall(content)
+        with open('%s/links-%s.bin' % (storage, url_hash), 'w') as fp:
+            for entry in ll:
+                scraped_url = entry[0]
+                fp.write(scraped_url+'\r\n')
     print('URL successfully scraped.')
     driver.close()
     driver.quit()
