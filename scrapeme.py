@@ -125,7 +125,7 @@ class ScrapeMe:
         firefox_options.add_argument('--mute-audio')
         firefox_options.add_argument('--ignore-certificate-errors')
         firefox_options.preferences.update({"javascript.enabled": False,})
-        firefox_options.set_preference("general.useragent.override", self.us)
+        firefox_options.set_preference("general.useragent.override", self.ua)
 
         return firefox_options, ff_profile
 
