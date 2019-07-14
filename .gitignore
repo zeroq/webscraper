@@ -105,3 +105,6 @@ venv.bak/
 
 envscraper/
 web/
+geckodriver
+geckodriver.log
+chromedriver
