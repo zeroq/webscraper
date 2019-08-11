@@ -22,6 +22,7 @@ class ScrapeMe:
         self.source = source
         self.links = links
         self.scraped_links = []
+        self.scraped_title = []
         self.init_values()
         self.use_chrome = use_chrome
 
@@ -143,6 +144,9 @@ class ScrapeMe:
         """
         return self.scraped_links
 
+    def get_title(self):
+        return self.scraped_title
+
     def get_storage(self):
         """get storage directory of last url
         """
@@ -153,10 +157,19 @@ class ScrapeMe:
         """
         return self.url_hash
 
+    def __del__(self):
+        try:
+            driver.close()
+            driver.quit()
+        except:
+            pass
+        print('driver closed ...')
+
     def scrape(self, url):
         """surf to website using selenium and grab html content
         """
         self.scraped_links = []
+        self.scraped_title = ""
         if not url.startswith('http'):
             self.url = 'http://'+url
         else:
@@ -172,6 +185,7 @@ class ScrapeMe:
             driver.get(self.url)
         except TimeoutException as e:
             print('Page did not load within given timeout.')
+            self.scraped_title = "Page Timeout"
             driver.close()
             driver.quit
             return False
@@ -184,6 +198,10 @@ class ScrapeMe:
             os.makedirs(self.storage, exist_ok=True)
             with open('%s/source-%s.bin' % (self.storage, self.url_hash), 'w') as fp:
                 fp.write(content)
+            # get title
+            re_title = re.compile('<title>(.+?)</title>', re.S)
+            tt = re_title.findall(content)
+            self.scraped_title = tt
         if self.links:
             re_links = re.compile('href=\"(https{0,1}://(.+?\..+?)/{0,1}.*?)\"')
             ll = re_links.findall(content)
